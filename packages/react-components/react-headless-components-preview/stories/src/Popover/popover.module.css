@@ -1,44 +1,66 @@
+/*
+  Mirrors `Button/button.module.css` — magenta accent pill. Stays in sync
+  with the Drawer trigger + Positioning concept stories so the docsite reads
+  as one design language.
+*/
 .trigger {
   display: inline-flex;
   align-items: center;
-  height: 36px;
-  padding: 0 var(--space-4);
-  border: 0;
-  border-radius: var(--radius-md);
-  background: var(--text);
-  color: var(--text-on-accent);
-  font-size: 13.5px;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: var(--stroke-thin) solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-standard), transform 80ms var(--ease-standard);
 }
 
 .trigger:hover,
 .trigger[data-open] {
-  background: var(--text-muted);
+  background: var(--accent-strong);
+}
+
+.trigger:active {
+  transform: scale(0.98);
 }
 
 .trigger:focus-visible {
-  outline: var(--stroke-thick) solid var(--text);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
 }
 
+/*
+  Secondary variant — outlined pill (matches Button.outline). Used on the
+  Anchor button in PopoverAnchorToCustomTarget so the custom anchor reads as
+  a different surface from the popover's own trigger.
+*/
 .triggerSecondary {
-  background: var(--accent);
+  background: transparent;
+  color: var(--text);
+  border-color: var(--border-strong);
 }
 
 .triggerSecondary:hover,
 .triggerSecondary[data-open] {
-  background: var(--accent-strong);
+  background: var(--surface-muted);
+  border-color: var(--text);
 }
 
 .triggerSecondary:focus-visible {
-  outline-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
 }
 
 .triggerSmall {
-  height: 28px;
-  padding: 0 var(--space-3);
-  font-size: 12.5px;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
 }
 
 .contextTrigger {
@@ -54,8 +76,8 @@
 }
 
 .contextTrigger:focus-visible {
-  outline: var(--stroke-thick) solid var(--text);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
 }
 
 .surface {
@@ -90,14 +112,21 @@
 }
 
 .heading {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--text);
   margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  color: var(--text);
 }
 
 .headingFlush {
   margin: 0;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: var(--tracking-heading);
+  color: var(--text);
 }
 
 .body {
@@ -110,27 +139,36 @@
   margin: 0 0 var(--space-3);
 }
 
+/*
+  Outlined pill (matches Button.outline) — used for in-surface secondary
+  actions like "Reveal more" or "Root button".
+*/
 .actionButton {
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 var(--space-3);
+  justify-content: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
   border: var(--stroke-thin) solid var(--border-strong);
-  border-radius: var(--radius-md);
-  background: var(--bg-elev);
+  border-radius: var(--radius-pill);
+  background: transparent;
   color: var(--text);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
 }
 
 .actionButton:hover {
   background: var(--surface-muted);
+  border-color: var(--text);
 }
 
 .actionButton:focus-visible {
-  outline: var(--stroke-thick) solid var(--text);
-  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
 }
 
 .menuItem {
@@ -147,6 +185,12 @@
 
 .menuItem:hover {
   background: var(--surface-muted);
+}
+
+.menuItem:focus-visible {
+  outline: none;
+  background: var(--surface-muted);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 
 .link {
