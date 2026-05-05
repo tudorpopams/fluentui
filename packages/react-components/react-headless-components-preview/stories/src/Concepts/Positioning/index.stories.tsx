@@ -2,6 +2,8 @@ import { Positioning } from './utils.stories';
 
 import descriptionMd from './PositioningDescription.md';
 import bestPracticesMd from './PositioningBestPractices.md';
+import positioningCss from './positioning.module.css?raw';
+import { withCssModuleSource } from '../../_helpers/withCssModuleSource';
 
 export { Default } from './PositioningDefault.stories';
 export { ShorthandPositions } from './PositioningShorthandPositions.stories';
@@ -22,5 +24,6 @@ export default {
         component: [descriptionMd, bestPracticesMd].join('\n'),
       },
     },
+    ...withCssModuleSource({ name: 'positioning.module.css', source: positioningCss }),
   },
 };

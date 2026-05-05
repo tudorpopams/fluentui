@@ -1,0 +1,332 @@
+/*
+  Shared styles for the Positioning concept stories. Same design language as
+  Button + Dialog elsewhere in the docsite — magenta-accent pill triggers,
+  white surface cards, monochrome neutrals.
+*/
+
+.outer {
+  width: 100%;
+  overflow: auto;
+}
+
+.gridWrapper {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  grid-template-rows: repeat(5, auto);
+  gap: 64px;
+  /*
+    Margins are sized so a 160-wide / 80-tall popover surface renders fully
+    visible at every requested position (above/below/before/after, plus
+    start/end alignments). Popover overflow is tracked by
+    `position-try-fallbacks` on the popover surface, but we'd rather show the
+    *requested* position here — that's the whole point of this demo.
+  */
+  margin: 112px 192px;
+  width: max-content;
+}
+
+.gridCell1_1 {
+  grid-row: 1;
+  grid-column: 1;
+}
+.gridCell1_2 {
+  grid-row: 1;
+  grid-column: 2;
+}
+.gridCell1_3 {
+  grid-row: 1;
+  grid-column: 3;
+}
+.gridCell2_1 {
+  grid-row: 2;
+  grid-column: 1;
+}
+.gridCell2_3 {
+  grid-row: 2;
+  grid-column: 3;
+}
+.gridCell3_1 {
+  grid-row: 3;
+  grid-column: 1;
+}
+.gridCell3_3 {
+  grid-row: 3;
+  grid-column: 3;
+}
+.gridCell4_1 {
+  grid-row: 4;
+  grid-column: 1;
+}
+.gridCell4_3 {
+  grid-row: 4;
+  grid-column: 3;
+}
+.gridCell5_1 {
+  grid-row: 5;
+  grid-column: 1;
+}
+.gridCell5_2 {
+  grid-row: 5;
+  grid-column: 2;
+}
+.gridCell5_3 {
+  grid-row: 5;
+  grid-column: 3;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-6);
+  margin: var(--space-16) 128px;
+  width: max-content;
+}
+
+.stackTight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin: var(--space-16);
+}
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-4);
+}
+
+.pageGap4 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.responsiveGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .responsiveGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+}
+
+.sectionTitle {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 var(--space-1);
+}
+
+.sectionNote {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 36rem;
+  margin: 0 0 var(--space-2);
+  line-height: 1.5;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.numberInput {
+  width: 80px;
+  padding: var(--space-1) var(--space-2);
+  border: var(--stroke-thin) solid var(--border-strong);
+  border-radius: var(--radius-md);
+  background: var(--bg-elev);
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.numberInput:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
+}
+
+/*
+  Trigger button — magenta accent pill (matches Button.button).
+*/
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  border: var(--stroke-thin) solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-standard), transform 80ms var(--ease-standard);
+}
+
+.trigger:hover,
+.trigger[data-open] {
+  background: var(--accent-strong);
+}
+
+.trigger:active {
+  transform: scale(0.98);
+}
+
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--bg-elev), 0 0 0 4px var(--accent);
+}
+
+/*
+  Compact trigger for the dense ShorthandPositions / CoverTarget grids.
+  Fixed-size pill so each cell visually anchors at the same offset.
+*/
+.triggerCompact {
+  width: 128px;
+  height: 36px;
+  font-size: 12px;
+}
+
+/*
+  Smaller pill for the in-box flipping demos.
+*/
+.triggerSmall {
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.triggerWide {
+  width: 350px;
+}
+
+/*
+  Surface card — same chrome as Popover surface, slight variations per
+  story for sizing.
+*/
+.surface {
+  background: var(--bg-elev);
+  border: var(--stroke-thin) solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-3);
+  padding: var(--space-4);
+  min-width: 160px;
+}
+
+.surfaceCell {
+  width: 160px;
+  height: 80px;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.surfaceCellWide {
+  width: 224px;
+  height: 112px;
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.surfaceNarrow {
+  width: 160px;
+  padding: var(--space-2) var(--space-3);
+  font-size: 13px;
+  color: var(--text);
+}
+
+.surfaceFlip {
+  width: 160px;
+  padding: var(--space-2);
+  font-size: 12px;
+  color: var(--text);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+}
+
+.surfaceFlipLarge {
+  width: 320px;
+  max-height: 140px;
+  padding: var(--space-3);
+  font-size: 13px;
+  color: var(--text);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-2);
+}
+
+.surfaceMatch {
+  padding: var(--space-4);
+  box-sizing: border-box;
+}
+
+/*
+  Demo box — dashed-border rectangle that gives the flipping examples a
+  containing block to overflow against (`contain: layout` is set inline in
+  demoBox.ts).
+*/
+.demoBox {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  min-height: 260px;
+  border: var(--stroke-thin) dashed var(--border-stronger);
+  border-radius: var(--radius-md);
+  background: var(--bg-soft);
+  padding: var(--space-4);
+}
+
+/*
+  `flip-demo::after` shows the actual placement so users can see the flip
+  resolve. Targets the element class added by InlineAnchored consumers.
+*/
+.flipDemo::after {
+  content: 'Actual: ' attr(data-placement);
+  display: block;
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: var(--stroke-thin) dashed var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+}
