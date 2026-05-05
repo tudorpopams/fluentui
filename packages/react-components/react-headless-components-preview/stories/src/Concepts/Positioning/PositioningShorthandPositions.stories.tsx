@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Popover, PopoverTrigger, PopoverSurface } from '@fluentui/react-headless-components-preview/popover';
 import type { PositioningProps } from '@fluentui/react-headless-components-preview/positioning';
 
+import { InlineAnchored } from './InlineAnchored';
 import styles from './positioning.module.css';
 
 const cells: Array<{
@@ -24,17 +24,24 @@ const cells: Array<{
   { label: 'below-end', position: 'below', align: 'end', gridClass: styles.gridCell5_3 },
 ];
 
+/*
+ * Renders all 12 anchored surfaces at once via `InlineAnchored` (which uses
+ * `usePositioning` directly, not `popover="auto"`) so the demo shows every
+ * requested position side-by-side without any click-to-open and without the
+ * top-layer flip quirks that fight `position-area` in a constrained canvas.
+ */
 export const ShorthandPositions = (): React.ReactNode => (
   <div className={styles.outer}>
     <div className={styles.gridWrapper}>
       {cells.map(cell => (
         <div key={cell.label} className={cell.gridClass}>
-          <Popover positioning={{ position: cell.position, align: cell.align }}>
-            <PopoverTrigger>
-              <button className={`${styles.trigger} ${styles.triggerCompact}`}>{cell.label}</button>
-            </PopoverTrigger>
-            <PopoverSurface className={`${styles.surface} ${styles.surfaceCell}`}>Container</PopoverSurface>
-          </Popover>
+          <InlineAnchored
+            positioning={{ position: cell.position, align: cell.align, pinned: true }}
+            surfaceClassName={`${styles.surface} ${styles.surfaceCell}`}
+            trigger={<button className={`${styles.trigger} ${styles.triggerCompact}`}>{cell.label}</button>}
+          >
+            Container
+          </InlineAnchored>
         </div>
       ))}
     </div>

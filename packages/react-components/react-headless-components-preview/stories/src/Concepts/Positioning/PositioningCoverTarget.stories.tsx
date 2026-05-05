@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Popover, PopoverTrigger, PopoverSurface } from '@fluentui/react-headless-components-preview/popover';
 import type { PositioningProps } from '@fluentui/react-headless-components-preview/positioning';
 
+import { InlineAnchored } from './InlineAnchored';
 import styles from './positioning.module.css';
 
 const cells: Array<{
@@ -24,17 +24,23 @@ const cells: Array<{
   { label: 'below-end', position: 'below', align: 'end', gridClass: styles.gridCell5_3 },
 ];
 
+/*
+ * Same approach as ShorthandPositions — render via `InlineAnchored` so all 12
+ * cover-target surfaces are visible side-by-side. Each surface overlaps its
+ * trigger because of `coverTarget: true`, which is the whole point of the demo.
+ */
 export const CoverTarget = (): React.ReactNode => (
   <div className={styles.outer}>
     <div className={styles.gridWrapper}>
       {cells.map(cell => (
         <div key={cell.label} className={cell.gridClass}>
-          <Popover positioning={{ position: cell.position, align: cell.align, coverTarget: true }}>
-            <PopoverTrigger>
-              <button className={`${styles.trigger} ${styles.triggerCompact}`}>{cell.label}</button>
-            </PopoverTrigger>
-            <PopoverSurface className={`${styles.surface} ${styles.surfaceCellWide}`}>Container</PopoverSurface>
-          </Popover>
+          <InlineAnchored
+            positioning={{ position: cell.position, align: cell.align, coverTarget: true, pinned: true }}
+            surfaceClassName={`${styles.surface} ${styles.surfaceCellWide}`}
+            trigger={<button className={`${styles.trigger} ${styles.triggerCompact}`}>{cell.label}</button>}
+          >
+            Container
+          </InlineAnchored>
         </div>
       ))}
     </div>

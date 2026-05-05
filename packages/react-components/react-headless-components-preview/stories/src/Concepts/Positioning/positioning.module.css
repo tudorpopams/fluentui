@@ -17,11 +17,12 @@
   /*
     Margins are sized so a 160-wide / 80-tall popover surface renders fully
     visible at every requested position (above/below/before/after, plus
-    start/end alignments). Popover overflow is tracked by
-    `position-try-fallbacks` on the popover surface, but we'd rather show the
-    *requested* position here — that's the whole point of this demo.
+    start/end alignments). Bottom is wider than top because the docs canvas
+    card auto-sizes to content — the `below-*` popovers extend past the
+    last grid row and would otherwise trigger `position-try-fallbacks`
+    `flip-block` and flip above the trigger.
   */
-  margin: 112px 192px;
+  margin: 112px 192px 192px;
   width: max-content;
 }
 
