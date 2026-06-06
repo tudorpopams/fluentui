@@ -1,0 +1,21 @@
+{
+  "name": "@fluentui/markbook-poc",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Proof of concept: FluentUI v9 react-components stories rendered with Markbook instead of Storybook.",
+  "scripts": {
+    "dev": "markbook dev",
+    "build": "markbook build",
+    "preview": "markbook preview"
+  },
+  "dependencies": {
+    "markbook": "file:./vendor/markbook-0.0.0.tgz",
+    "@markbook/core": "file:./vendor/markbook-core-0.0.0.tgz",
+    "@markbook/adapter-react": "file:./vendor/markbook-adapter-react-0.0.0.tgz",
+    "@markbook/adapter-shared": "file:./vendor/markbook-adapter-shared-0.0.0.tgz",
+    "@fluentui/react-components": "*",
+    "@fluentui/react-icons": "*",
+    "react": "19.2.0",
+    "react-dom": "19.2.0"
+  }
+}

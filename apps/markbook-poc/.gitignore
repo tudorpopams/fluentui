@@ -1,0 +1,6 @@
+# Markbook build artifacts
+.markbook/
+dist/
+
+# Local deps
+node_modules/

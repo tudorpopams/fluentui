@@ -368,7 +368,10 @@
     "**/micromatch/braces": "^3.0.3",
     "**/just-scripts-utils/tar": "^7.5.8",
     "**/body-parser/qs": "^6.14.2",
-    "**/@cypress/request/qs": "^6.14.2"
+    "**/@cypress/request/qs": "^6.14.2",
+    "@markbook/core": "file:./apps/markbook-poc/vendor/markbook-core-0.0.0.tgz",
+    "@markbook/adapter-shared": "file:./apps/markbook-poc/vendor/markbook-adapter-shared-0.0.0.tgz",
+    "@markbook/adapter-react": "file:./apps/markbook-poc/vendor/markbook-adapter-react-0.0.0.tgz"
   },
   "nx": {
     "includedScripts": []
