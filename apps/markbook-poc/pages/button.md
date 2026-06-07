@@ -11,30 +11,30 @@ and themed with the FluentUI web light theme.
 
 ## Default
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx export=Default}
 :::
 
 ## Appearance
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonAppearance.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonAppearance.stories.tsx export=Appearance}
 :::
 
 ## Shape
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonShape.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonShape.stories.tsx export=Shape}
 :::
 
 ## Size
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonSize.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonSize.stories.tsx export=Size}
 :::
 
 ## Icon
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonIcon.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonIcon.stories.tsx export=Icon}
 :::
 
 ## Disabled
 
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDisabled.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDisabled.stories.tsx export=Disabled}
 :::

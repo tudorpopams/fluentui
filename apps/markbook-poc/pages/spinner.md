@@ -9,20 +9,20 @@ Real stories from `packages/react-components/react-spinner/stories/src/Spinner/`
 
 ## Default
 
-:::stories{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerDefault.stories.tsx}
+:::story{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerDefault.stories.tsx export=Default}
 :::
 
 ## Size
 
-:::stories{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerSize.stories.tsx}
+:::story{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerSize.stories.tsx export=Size}
 :::
 
 ## Appearance
 
-:::stories{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerAppearance.stories.tsx}
+:::story{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerAppearance.stories.tsx export=Appearance}
 :::
 
 ## Label
 
-:::stories{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerLabel.stories.tsx}
+:::story{src=../../../packages/react-components/react-spinner/stories/src/Spinner/SpinnerLabel.stories.tsx export=Labels}
 :::

@@ -16,4 +16,15 @@ export default defineConfig({
   adapter: reactAdapter({
     decorators: ['./decorators/fluent-provider.tsx'],
   }),
+  // "Open in playground" buttons on every story. FluentUI ships on npm, so the
+  // generated sandboxes resolve the imports without any extra wiring.
+  playground: {
+    providers: ['codesandbox', 'stackblitz'],
+    dependencies: {
+      '@fluentui/react-components': 'latest',
+      '@fluentui/react-icons': 'latest',
+      react: 'latest',
+      'react-dom': 'latest',
+    },
+  },
 });

@@ -50,8 +50,30 @@ yarn dev                                # Vite-backed dev server with hot reload
 
 ## Adding more components
 
-Copy a page like `pages/button.md` and point the `:::stories` `src` at any other
+Copy a page like `pages/button.md` and point each `:::story` `src` at any other
 component's story files under `packages/react-components/<component>/stories/src/`.
-Avoid the `index.stories.tsx` aggregator files — they import `.md`/`.mdx`
-description files that this minimal Markbook setup doesn't process; reference the
-leaf `*.stories.tsx` files instead.
+
+FluentUI's stories use **named** exports, so use the singular `:::story`
+directive with an explicit `export=` and write your own `##` heading:
+
+```md
+## Default
+
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx export=Default}
+:::
+```
+
+(`:::stories` — plural — would also emit its own heading from the export name,
+giving you a duplicate next to your `##` heading.)
+
+Skip any story file that imports a `.md` / `.mdx` description — this minimal
+Markbook setup has no loader for them, so the Vite build fails. That includes the
+`index.stories.tsx` aggregators and a few leaf stories (e.g. `DialogActions`,
+`DialogNonModal`). Pick `.md`-free leaf `*.stories.tsx` files instead.
+
+## Open in CodeSandbox / StackBlitz
+
+`markbook.config.ts` enables Markbook's `playground` integration, so every story
+gets **Open in CodeSandbox** / **Open in StackBlitz** buttons. Because FluentUI is
+published on npm, the generated sandboxes resolve `@fluentui/react-components`
+without any extra wiring.

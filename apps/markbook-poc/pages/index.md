@@ -20,6 +20,8 @@ directive. A single Markbook decorator wraps each story in
 - [Button](./button.html)
 - [Spinner](./spinner.html)
 - [Counter Badge](./badge.html)
+- [Card](./card.html)
+- [Dialog](./dialog.html)
 
 ## How it works
 
@@ -31,10 +33,11 @@ import { reactAdapter } from '@markbook/adapter-react/config';
 export default defineConfig({
   contentDir: 'pages',
   adapter: reactAdapter({ decorators: ['./decorators/fluent-provider.tsx'] }),
+  playground: { providers: ['codesandbox', 'stackblitz'] },
 });
 ```
 
 ```md
-:::stories{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx}
+:::story{src=../../../packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx export=Default}
 :::
 ```
