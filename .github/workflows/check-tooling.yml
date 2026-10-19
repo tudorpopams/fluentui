@@ -1,55 +1,258 @@
-name: Check tooling
+name: Runner benchmark (free only)
+run-name: Free runners / ${{ inputs.scenario }} / ${{ inputs.pipeline }} / ${{ inputs.repetitions }} trials
+
 on:
-  pull_request:
-    paths:
-      - yarn.lock
-      - tools/workspace-plugin/**
-      - scripts/executors/**
   workflow_dispatch:
+    inputs:
+      scenario:
+        type: choice
+        options: [typical, broad, both]
+        default: typical
+        description: Historical workload with an existing paid-runner baseline
+      pipeline:
+        type: choice
+        options: [all, main, compiler, bundle, website, rit, vrt]
+        default: all
+        description: Compute workload; no deployment or artifact upload is performed
+      repetitions:
+        type: choice
+        options: ["1", "3"]
+        default: "1"
+        description: Independent fresh-VM repetitions per runner and workload
+
+permissions:
+  contents: read
 
 env:
-  __FORCE_API_MD_UPDATE__: true
-  __FORCE_SNAPSHOT_UPDATE__: true
+  NX_PARALLEL: 6
+  NX_PREFER_TS_NODE: true
   NX_VERBOSE_LOGGING: true
+  BROWSERSLIST_IGNORE_OLD_DATA: true
 
 jobs:
-  check-tools:
-    if: ${{ github.repository_owner == 'microsoft' }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+  configuration:
+    if: ${{ github.repository == 'tudorpopams/fluentui' && !github.event.repository.private }}
+    runs-on: ubuntu-24.04
+    outputs:
+      scenarios: ${{ steps.config.outputs.scenarios }}
+      pipelines: ${{ steps.config.outputs.pipelines }}
+      trials: ${{ steps.config.outputs.trials }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        id: config
+        env:
+          SCENARIO: ${{ inputs.scenario }}
+          PIPELINE: ${{ inputs.pipeline }}
+          REPETITIONS: ${{ inputs.repetitions }}
         with:
+          script: |
+            const scenarios = {
+              typical: {
+                name: 'typical',
+                head: '89414cac41164e81aee2eab9d85ab4d0b03bc03d',
+                base: '0d9dc127dc77d8063820c7a706e9243325f4b95a',
+                pull: 36907,
+              },
+              broad: {
+                name: 'broad',
+                head: '4e13266d78f97199ee806a1bd4e6d5fe4cf9549c',
+                base: '13aa67efb57d2e7a9842f72cc43f0288625c205e',
+                pull: 36617,
+              },
+            };
+            const pipelines = ['main', 'compiler', 'bundle', 'website', 'rit', 'vrt'];
+            const scenario = process.env.SCENARIO;
+            const pipeline = process.env.PIPELINE;
+            const repetitions = Number(process.env.REPETITIONS);
+            if (!(scenario in scenarios) && scenario !== 'both') {
+              throw new Error('Unknown historical scenario');
+            }
+            if (!pipelines.includes(pipeline) && pipeline !== 'all') {
+              throw new Error('Unknown pipeline');
+            }
+            if (![1, 3].includes(repetitions)) {
+              throw new Error('Unsupported repetition count');
+            }
+            core.setOutput('scenarios', JSON.stringify(
+              scenario === 'both' ? Object.values(scenarios) : [scenarios[scenario]]
+            ));
+            core.setOutput('pipelines', JSON.stringify(
+              pipeline === 'all' ? pipelines : [pipeline]
+            ));
+            core.setOutput('trials', JSON.stringify(
+              Array.from({length: repetitions}, (_, index) => index + 1)
+            ));
+
+  warm-dependencies:
+    needs: configuration
+    name: Warm dependencies / ${{ matrix.scenario.name }} / ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+        scenario: ${{ fromJSON(needs.configuration.outputs.scenarios) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: microsoft/fluentui
+          ref: ${{ matrix.scenario.head }}
           fetch-depth: 0
-
-      - uses: actions/setup-node@v6
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
-          node-version: '22'
-
+          node-version: "22.23.2"
+          cache: yarn
       - run: yarn install --immutable
 
-      - run: yarn nx run scripts-executors:test -t 'smoke test'
+  benchmark:
+    needs: [configuration, warm-dependencies]
+    if: ${{ !cancelled() && needs.configuration.result == 'success' }}
+    name: Bench / ${{ matrix.scenario.name }} / ${{ matrix.pipeline }} / ${{ matrix.runner }} / ${{ matrix.trial }}
+    strategy:
+      fail-fast: false
+      max-parallel: 12
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+        scenario: ${{ fromJSON(needs.configuration.outputs.scenarios) }}
+        pipeline: ${{ fromJSON(needs.configuration.outputs.pipelines) }}
+        trial: ${{ fromJSON(needs.configuration.outputs.trials) }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 120
+    env:
+      NX_BASE: ${{ matrix.scenario.base }}
+      NX_HEAD: ${{ matrix.scenario.head }}
+    steps:
+      - name: Checkout historical source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: microsoft/fluentui
+          ref: ${{ matrix.scenario.head }}
+          fetch-depth: 0
+          persist-credentials: false
 
-      - run: yarn nx run workspace-plugin:test -t 'prepare-initial-release generator'
-
-      - run: yarn nx list @fluentui/workspace-plugin
-
-      # pre-build react-jsx-runtime - as generate-api executor doesn't provide copy assets capability
-      - run: yarn nx run react-jsx-runtime:build
-
-      # Generators create/remove packages and modify the lockfile, so immutable installs must be disabled
-      - name: Check nx workspace generators
+      - name: Verify workload and runner
         shell: bash
-        run: echo "YARN_ENABLE_IMMUTABLE_INSTALLS=false" >> "$GITHUB_ENV"
+        env:
+          EXPECTED_RUNNER: ${{ matrix.runner }}
+        run: |
+          case "$EXPECTED_RUNNER" in
+            ubuntu-24.04|ubuntu-24.04-arm|macos-14) ;;
+            *) echo "::error::Only free standard runner labels are allowed"; exit 1 ;;
+          esac
+          test "$(git rev-parse HEAD)" = "$NX_HEAD"
+          git cat-file -e "$NX_BASE^{commit}"
+          git update-ref refs/remotes/origin/master "$NX_BASE"
+          node -e 'const os = require("os"); console.log(JSON.stringify({cpus: os.cpus().map(c => c.model), memory: os.totalmem(), platform: os.platform(), arch: os.arch()}))'
 
-      - run: yarn nx g @fluentui/workspace-plugin:react-library --name hello-world --owner '@microsoft/fluentui-react-build' --kind standard --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:react-component --project hello-world-preview --name Aiur --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:cypress-component-configuration --project hello-world-preview --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:bundle-size-configuration --project hello-world-preview --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:prepare-initial-release --project hello-world-preview --phase=preview --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:prepare-initial-release --project hello-world-preview --phase=stable --no-interactive
-      - run: yarn nx g @nx/workspace:remove --project hello-world --forceRemove --no-interactive
-      - run: yarn nx g @nx/workspace:remove --project hello-world-stories --forceRemove --no-interactive
-      - run: yarn nx g @fluentui/workspace-plugin:tsconfig-base-all --no-interactive
+      - name: Set up Node and restore dependency cache
+        id: node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "22.23.2"
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        if: ${{ matrix.pipeline == 'website' || matrix.pipeline == 'vrt' }}
+        run: yarn nx exec -p workspace-plugin -- yarn --cwd "$GITHUB_WORKSPACE" playwright install --with-deps
+
+      - name: Workspace lint
+        if: ${{ matrix.pipeline == 'main' }}
+        run: |
+          yarn nx run workspace-plugin:check-graph
+          yarn nx sync:check
+          yarn nx g @fluentui/workspace-plugin:tsconfig-base-all --verify
+          yarn nx g @fluentui/workspace-plugin:normalize-package-dependencies --verify
+          yarn nx g @fluentui/workspace-plugin:verify-peer-dependencies --tag=vNext
+
+      - name: Type-check just.config.ts files
+        if: ${{ matrix.pipeline == 'main' }}
+        run: |
+          yarn nx run-many -t build -p api-docs
+          yarn nx exec -p workspace-plugin -- yarn --cwd "$GITHUB_WORKSPACE" tsc -p ./tsconfig.just-scripts-configs.json
+
+      - name: Check installed dependency versions
+        if: ${{ matrix.pipeline == 'main' }}
+        run: yarn nx exec -p workspace-plugin -- yarn --cwd "$GITHUB_WORKSPACE" check:installed-dependencies-versions
+
+      - name: Check formatting
+        if: ${{ matrix.pipeline == 'main' }}
+        run: yarn nx format:check --base origin/master
+
+      - name: Build, test, lint, SSR and packaging
+        if: ${{ matrix.pipeline == 'main' }}
+        env:
+          FLUENT_JEST_WORKER: 2
+        run: yarn nx affected -t build test lint type-check test-ssr test-integration verify-packaging verify-bundle-isolation attw --nxBail
+
+      - name: React Compiler analysis
+        if: ${{ matrix.pipeline == 'compiler' }}
+        run: yarn nx affected -t react-compiler-analyzer--lint --nxBail
+
+      - name: Prepare React-version workspaces
+        if: ${{ matrix.pipeline == 'rit' }}
+        run: |
+          yarn nx exec -p workspace-plugin -- yarn --cwd "$GITHUB_WORKSPACE" rit --react 17 --install-deps
+          yarn nx exec -p workspace-plugin -- yarn --cwd "$GITHUB_WORKSPACE" rit --react 18 --install-deps
+
+      - name: Verify React-version Cypress installations
+        if: ${{ matrix.pipeline == 'rit' }}
+        shell: bash
+        run: |
+          yarn nx exec -p workspace-plugin -- "$GITHUB_WORKSPACE"/tmp/rit/react-17/node_modules/.bin/cypress verify
+          yarn nx exec -p workspace-plugin -- "$GITHUB_WORKSPACE"/tmp/rit/react-18/node_modules/.bin/cypress verify
+
+      - name: React-version E2E tests
+        if: ${{ matrix.pipeline == 'rit' }}
+        run: yarn nx affected -t test-rit--17--e2e,test-rit--18--e2e --exclude='react-19-tests-v9,react-charting,react'
+
+      - name: React-version type-check and tests
+        if: ${{ matrix.pipeline == 'rit' }}
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          FLUENT_JEST_WORKER: 2
+        run: yarn nx affected -t test-rit--17--type-check,test-rit--18--type-check,test-rit--17--test,test-rit--18--test --exclude='react-19-tests-v9'
+
+      - name: Build packages and create bundle-size reports
+        if: ${{ matrix.pipeline == 'bundle' }}
+        run: yarn nx affected -t bundle-size --nxBail
+
+      - name: Bundle preview packages
+        if: ${{ matrix.pipeline == 'website' }}
+        run: yarn nx affected -t bundle --nxBail
+
+      - name: Build Storybooks
+        if: ${{ matrix.pipeline == 'website' }}
+        run: yarn nx affected -t build-storybook --nxBail
+
+      - name: Generate preview site
+        if: ${{ matrix.pipeline == 'website' }}
+        run: yarn nx run pr-deploy-site:generate:site
+
+      - name: Generate VRT screenshots
+        if: ${{ matrix.pipeline == 'vrt' }}
+        run: yarn nx affected -t test-vr --nxBail
+
+      - name: Check for unstaged changes
+        if: ${{ matrix.pipeline == 'main' }}
+        run: |
+          git status --porcelain
+          git diff-index --quiet HEAD --
+
+      - name: Record benchmark metadata
+        if: ${{ always() }}
+        shell: bash
+        env:
+          SCENARIO: ${{ matrix.scenario.name }}
+          PIPELINE: ${{ matrix.pipeline }}
+          RUNNER_LABEL: ${{ matrix.runner }}
+          TRIAL: ${{ matrix.trial }}
+          DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit }}
+          BENCHMARK_STATUS: ${{ job.status }}
+        run: |
+          node -e 'const keys = ["SCENARIO", "PIPELINE", "RUNNER_LABEL", "TRIAL", "NX_BASE", "NX_HEAD", "DEPENDENCY_CACHE_HIT", "BENCHMARK_STATUS"]; console.log("BENCHMARK_METADATA=" + JSON.stringify(Object.fromEntries(keys.map(k => [k, process.env[k]]))))'
